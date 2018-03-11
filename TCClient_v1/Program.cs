@@ -66,8 +66,6 @@ namespace TCClient_v1
                                 length = clientSocket.Receive(msg);
                                 game.Send(msg);
                             }
-
-
                         }
                         catch (Exception e)
                         {
@@ -82,7 +80,13 @@ namespace TCClient_v1
             }
             else
             {
-                //Start as host
+                Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                clientSocket.Connect(new IPEndPoint(IPAddress.Parse("123.206.208.46"), 1030));
+                byte[] msg = new byte[0];
+                byte idtosend = 0;
+                msg[0] = idtosend;
+                clientSocket.Send(msg);
+
 
             }
         }
