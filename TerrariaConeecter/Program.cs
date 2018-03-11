@@ -229,7 +229,7 @@ namespace TerrariaConeecter
             //start time watcher(gc)
 
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3000));  //绑定IP地址：端口
+            serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1030));  //绑定IP地址：端口
             serverSocket.Listen(10);//设定最多10个排队连接请求 
             while (running)
             {
