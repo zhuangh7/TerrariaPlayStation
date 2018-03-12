@@ -23,7 +23,7 @@ namespace TCClient_v1
                 int length;
                 while (running)
                 {
-                    //Console.WriteLine("pipe thread transle.");
+                    //Console.WriteLine("pipe thread translate.");
                     length = p.client.Receive(msg);
                     p.host.Send(msg);
                 }
@@ -79,7 +79,7 @@ namespace TCClient_v1
 
                             while (running)
                             {
-                                Console.WriteLine("main thread transle.");
+                                Console.WriteLine("main thread translate.");
                                 length = clientSocket.Receive(msg);
                                 game.Send(msg);
                             }
@@ -120,30 +120,35 @@ namespace TCClient_v1
 
                     Console.WriteLine("Please start game and select host game, press anykey when you successfully host the game");
                     Console.ReadKey();
-                    Console.WriteLine("Coneecting to local game...");
+                    Console.WriteLine("Wait first client.");
                     Socket game = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    bool findgame = false;
-                    while (!findgame)
-                    {
-                        try
-                        {
-                            game.Connect(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
-                            Console.WriteLine("Local game finded.");
-                            break;
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("Find local game fall.");
-                        }
-                    }
-                    Console.WriteLine("Game start.");
-
-                    Thread guard = new Thread(new ParameterizedThreadStart(pipe));
-                    guard.Start(new Pipe(clientSocket, game));
+                    bool gamebegin = false;
+                    
                     while (running)
                     {
-                        //Console.WriteLine("main thread transle.");
+                        //Console.WriteLine("main thread translate.");
                         length = clientSocket.Receive(msg);
+                        if (!gamebegin)
+                        {
+                            bool findgame = false;
+                            while (!findgame)
+                            {
+                                try
+                                {
+                                    game.Connect(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
+                                    Console.WriteLine("Local game finded.");
+                                    gamebegin = true;
+                                    break;
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine("Find local game fall.");
+                                }
+                            }
+                            Console.WriteLine("Game start.");
+                            Thread guard = new Thread(new ParameterizedThreadStart(pipe));
+                            guard.Start(new Pipe(clientSocket, game));
+                        }
                         game.Send(msg);
                     }
                 }catch(Exception e)
