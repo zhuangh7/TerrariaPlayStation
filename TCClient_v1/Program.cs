@@ -15,13 +15,24 @@ namespace TCClient_v1
 
         public static void pipe(Object obj)
         {
-            Pipe p = (Pipe)obj;
-            byte[] msg = new byte[1];
-            int length;
-            while (running)
+            try
             {
-                length = p.client.Receive(msg);
-                p.host.Send(msg);
+
+                Pipe p = (Pipe)obj;
+                byte[] msg = new byte[1];
+                int length;
+                while (running)
+                {
+                    //Console.WriteLine("pipe thread transle.");
+                    length = p.client.Receive(msg);
+                    p.host.Send(msg);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                Console.WriteLine("tcp close");
+                running = false;
             }
         }
         static void Main(string[] args)
@@ -40,20 +51,25 @@ namespace TCClient_v1
                     {
                         //start local host
                         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1030));  //绑定IP地址：端口
+                        serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));  //绑定IP地址：端口
                         serverSocket.Listen(1);//设定最多10个排队连接请求
+
+                        Console.WriteLine("Start to connect server...");
 
                         //connect to server
                         Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         clientSocket.Connect(new IPEndPoint(IPAddress.Parse("123.206.208.46"), 1030));
+                        Console.WriteLine("Connect server successfully.");
+
                         byte[] msg = new byte[1];
                         try
                         {
-                            int temp = id + 128;
+                            int temp = id + 128;//set first bit to 1
                             byte idtosend = (byte)temp;
                             msg[0] = idtosend;
                             clientSocket.Send(msg);
 
+                            Console.WriteLine("Please start game, select join in IP, and type 127.0.0.1:7777");
                             Socket game = serverSocket.Accept();
                             int length;
                             Thread guard = new Thread(new ParameterizedThreadStart(pipe));
@@ -63,6 +79,7 @@ namespace TCClient_v1
 
                             while (running)
                             {
+                                Console.WriteLine("main thread transle.");
                                 length = clientSocket.Receive(msg);
                                 game.Send(msg);
                             }
@@ -75,19 +92,65 @@ namespace TCClient_v1
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine(e);
                     Console.WriteLine("The arg is illegal!");
                 }
             }
             else
             {
-                Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                clientSocket.Connect(new IPEndPoint(IPAddress.Parse("123.206.208.46"), 1030));
-                byte[] msg = new byte[0];
-                byte idtosend = 0;
-                msg[0] = idtosend;
-                clientSocket.Send(msg);
+                try
+                {
 
+                    Console.WriteLine("Start to connect server...");
+                    Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    clientSocket.Connect(new IPEndPoint(IPAddress.Parse("123.206.208.46"), 1030));
 
+                    Console.WriteLine("Connect server successfully.");
+                    byte[] msg = new byte[1];
+                    byte idtosend = 0;
+                    msg[0] = idtosend;
+                    clientSocket.Send(msg);
+                    //connect to server with cmd 0
+
+                    int length = clientSocket.Receive(msg);
+                    int id = msg[0];
+                    //get room id from server
+
+                    Console.WriteLine("Your room ID is: {0}", id);
+
+                    Console.WriteLine("Please start game and select host game, press anykey when you successfully host the game");
+                    Console.ReadKey();
+                    Console.WriteLine("Coneecting to local game...");
+                    Socket game = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    bool findgame = false;
+                    while (!findgame)
+                    {
+                        try
+                        {
+                            game.Connect(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));
+                            Console.WriteLine("Local game finded.");
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Find local game fall.");
+                        }
+                    }
+                    Console.WriteLine("Game start.");
+
+                    Thread guard = new Thread(new ParameterizedThreadStart(pipe));
+                    guard.Start(new Pipe(clientSocket, game));
+                    while (running)
+                    {
+                        //Console.WriteLine("main thread transle.");
+                        length = clientSocket.Receive(msg);
+                        game.Send(msg);
+                    }
+                }catch(Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                    running = false;
+                }
             }
         }
     }
