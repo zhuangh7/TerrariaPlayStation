@@ -12,8 +12,8 @@ In v2 version(if possible), will support more clients.
 In v3 version(if possible), will support link directly without my server.
 
 ##客户端与服务器交互图
-![IMAGE_1](https://github.com/Zhuanghq7/TerrariaConnecter/tree/master/image/image_1.jpg)
+![IMAGE_1](https://github.com/Zhuanghq7/TerrariaConnecter/blob/master/image/image_1.png)
 ##客户端host模式下的交互图
-![IMAGE_2](https://github.com/Zhuanghq7/TerrariaConnecter/tree/master/image/image_1.jpg)
+![IMAGE_2](https://github.com/Zhuanghq7/TerrariaConnecter/blob/master/image/client_1.png)
 ##客户端client模式下的交互图
 *还没画呢代码写完了=- =*
