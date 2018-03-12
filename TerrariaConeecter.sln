@@ -9,12 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCClient_v1", "TCClient_v1\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{AA94EFF1-2B5C-491C-950B-01207EF808BD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "image", "image", "{C544F618-94BF-473B-875E-7742B9804F56}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\..\Desktop\client_1.png = ..\..\..\Desktop\client_1.png
-		..\..\..\Desktop\图1.jpg = ..\..\..\Desktop\图1.jpg
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
