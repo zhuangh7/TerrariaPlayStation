@@ -91,11 +91,26 @@ namespace TerrariaConeecter
                                 //one is close, clear this room and host
                                 if (name < 0)
                                 {
-
+                                    if (pipe.host.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
+                                    if (pipe.client.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
                                     Clean(-name);
                                 }
                                 else
                                 {
+                                    if (pipe.host.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
+                                    if (pipe.client.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
                                     Clean(name);
                                 }
                             }
@@ -118,10 +133,26 @@ namespace TerrariaConeecter
                                 Console.WriteLine("close room: {0}", name);
                                 if (name < 0)
                                 {
+                                    if (pipe.host.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
+                                    if (pipe.client.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
                                     Clean(-name);
                                 }
                                 else
                                 {
+                                    if (pipe.host.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
+                                    if (pipe.client.Connected)
+                                    {
+                                        pipe.host.Close();
+                                    }
                                     Clean(name);
                                 }
                             }
@@ -132,6 +163,7 @@ namespace TerrariaConeecter
                 }
                 catch (Exception e)
                 {
+                    Console.Write(e.ToString());
                     Console.WriteLine("one pipe line is closing.");
                     if (name < 0)
                     {
@@ -142,6 +174,7 @@ namespace TerrariaConeecter
             }
             catch (Exception e)
             {
+                Console.Write(e.ToString());
                 Console.WriteLine("create pipeline error, close two socket.");
                 pipe.host.Close();
                 pipe.client.Close();
