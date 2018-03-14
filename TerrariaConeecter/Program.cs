@@ -91,14 +91,11 @@ namespace TerrariaConeecter
                                 //one is close, clear this room and host
                                 if (name < 0)
                                 {
-                                    pipe.host.Close();
-                                    pipe.client.Close();
+
                                     Clean(-name);
                                 }
                                 else
                                 {
-                                    pipe.host.Close();
-                                    pipe.client.Close();
                                     Clean(name);
                                 }
                             }
@@ -121,14 +118,10 @@ namespace TerrariaConeecter
                                 Console.WriteLine("close room: {0}", name);
                                 if (name < 0)
                                 {
-                                    pipe.host.Close();
-                                    pipe.client.Close();
                                     Clean(-name);
                                 }
                                 else
                                 {
-                                    pipe.host.Close();
-                                    pipe.client.Close();
                                     Clean(name);
                                 }
                             }
@@ -144,8 +137,6 @@ namespace TerrariaConeecter
                     {
                         name = -name;
                     }
-                    pipe.host.Close();
-                    pipe.client.Close();
                     Clean(name);
                 }
             }
