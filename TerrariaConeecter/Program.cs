@@ -7,168 +7,117 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 
-namespace TerrariaConeecter
-{
-    class Program
-    {
+namespace TerrariaConeecter {
+    class Program {
         public static Nullable<TimeSpan>[] times = new TimeSpan?[128];
         public static Socket[] hosts = new Socket[128];
         public static Thread[] rooms = new Thread[128];
         public static Boolean running = true;
         public static int TIME_OUT = 10;//min
 
-        public static void TimeWatcher()
-        {
+        public static void TimeWatcher() {
             TimeSpan now;
             TimeSpan diff;
-            while (running)
-            {
+            while (running) {
                 now = new TimeSpan(DateTime.Now.Ticks);
-                for (int i = 0; i < 128; i++)
-                {
-                    if (hosts[i] != null && rooms[i] == null && times[i] != null)
-                    {
+                for (int i = 0; i < 128; i++) {
+                    if (hosts[i] != null && rooms[i] == null && times[i] != null) {
                         //host come and waitting client...
                         diff = now.Subtract(times[i].Value);
-                        if (diff.TotalMinutes > TIME_OUT)
-                        {
+                        if (diff.TotalMinutes > TIME_OUT) {
                             //this room timeout, clear forciblly
                             hosts[i] = null;
                             times[i] = null;
+                            Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("room: {0} is time out, clear succefully.", i);
                         }
                     }
-                    if (hosts[i] != null && !hosts[i].Connected)
-                    {
+                    if (hosts[i] != null && !hosts[i].Connected) {
                         hosts[i] = null;
                         times[i] = null;
                         rooms[i] = null;
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("room: {0}'s host is disconnect, clear...", i);
                     }
                 }
             }
         }
-        public static void Clean(int i)
-        {
-            if (hosts[i] != null && hosts[i].Connected)
-            {
+        public static void Clean(int i, Socket s1, Socket s2) {
+            if (s1.Connected) {
+                s1.Close();
+            }
+            if (s2.Connected) {
+                s2.Close();
+            }
+            if (hosts[i] != null && hosts[i].Connected) {
                 hosts[i].Close();
             }
             rooms[i] = null;
             hosts[i] = null;
             times[i] = null;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Room {0} clean.", i);
         }
-        public static void PipeRoom(Object obj)
-        {
+        public static void PipeRoom(Object obj) {
             //if thread.Name >0 means this is the main pipe thread, and should self delete while timeout (position is name-1)
             //else means this is the second pipe thread, ez exit is OK.
             Pipe pipe = (Pipe)obj;
-            try
-            {
-                int name = int.Parse(Thread.CurrentThread.Name);
-                try
-                {
+            int name = int.Parse(Thread.CurrentThread.Name);
+            byte[] line = new byte[1024];
+            byte[] tosent;
+            int length;
+            try {
 
-                    if (name > 0)
-                    {
-                        //start the second thread
-                        Thread second = new Thread(new ParameterizedThreadStart(PipeRoom));
-                        second.Name = (-name).ToString();
-                        second.Start(obj);
-
-                        byte[] line = new byte[1];
-                        int length;
-                        while (running)
-                        {
-                            length = pipe.client.Receive(line);
-                            if (length == 1)
-                            {
-                                pipe.host.Send(line);
-                            }
-                            if (!pipe.client.Connected || !pipe.host.Connected)
-                            {
-                                Console.WriteLine("close room: {0}", name);
-                                //one is close, clear this room and host
-                                if (name < 0)
-                                {
-
-                                    Clean(-name);
-                                }
-                                else
-                                {
-                                    Clean(name);
-                                }
-                            }
+                if (name > 0) {
+                    //start the second thread
+                    Thread second = new Thread(new ParameterizedThreadStart(PipeRoom));
+                    second.Name = (-name).ToString();
+                    second.Start(obj);
+                    while (running) {
+                        length = pipe.client.Receive(line);
+                        if (length > 0) {
+                            tosent = new byte[length];
+                            Buffer.BlockCopy(line, 0, tosent, 0, length);
+                            pipe.host.Send(tosent);
                         }
                     }
-                    else
-                    {
-                        byte[] line = new byte[1];
-                        int length;
-                        while (running)
-                        {
-                            length = pipe.host.Receive(line);
-                            if (length == 1)
-                            {
-                                pipe.client.Send(line);
-                            }
-                            if (!pipe.client.Connected || !pipe.host.Connected)
-                            {
-                                //one is close, clear this room and host
-                                Console.WriteLine("close room: {0}", name);
-                                if (name < 0)
-                                {
-                                    Clean(-name);
-                                }
-                                else
-                                {
-                                    Clean(name);
-                                }
-                            }
-
+                } else {
+                    while (running) {
+                        length = pipe.host.Receive(line);
+                        if (length > 0) {
+                            tosent = new byte[length];
+                            Buffer.BlockCopy(line, 0, tosent, 0, length);
+                            pipe.client.Send(line);
                         }
                     }
+                }
 
+            } catch (Exception e) {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(e.ToString());
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Room {0} closed with exception ", name);
+                if (name < 0) {
+                    name = -name;
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine("one pipe line is closing.");
-                    if (name < 0)
-                    {
-                        name = -name;
-                    }
-                    Clean(name);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("create pipeline error, close two socket.");
-                pipe.host.Close();
-                pipe.client.Close();
+                Clean(name,pipe.client,pipe.host);
             }
         }
 
-        public static void JudgeClientType(Object obj)
-        {
-            try
-            {
+        public static void JudgeClientType(Object obj) {
+            try {
                 Socket client = (Socket)obj;
                 byte[] get = new byte[1];
                 int length = client.Receive(get);
-                if (length == 1)
-                {
+                if (length == 1) {
                     byte cmd = get[0];
-                    if (cmd < 128)
-                    {
-                        if (cmd == 0)
-                        {
+                    if (cmd < 128) {
+                        if (cmd == 0) {
                             //come with zero
                             //if the client come with 0 before all bytes,
                             Boolean find = false;
-                            for (int i = 0; i < 128; i++)
-                            {
-                                if (hosts[i] == null)
-                                {
+                            for (int i = 0; i < 128; i++) {
+                                if (hosts[i] == null) {
                                     //get an new ID code return to the client 
                                     byte[] msgtosent = new byte[1];
                                     byte idtosent = (byte)i;
@@ -176,91 +125,83 @@ namespace TerrariaConeecter
                                     client.Send(msgtosent);
                                     //and put the client into rooms
                                     times[i] = new TimeSpan(DateTime.Now.Ticks);
-                                    Console.WriteLine("Set timetag: {0}", times[i].ToString());
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.WriteLine("Judge is Host client, give ROOM {0}", i);
+                                    Console.WriteLine("Set timetag: {0} to socket Room {1}", times[i].ToString(),1);
                                     hosts[i] = client;
                                     find = true;
                                     break;
                                 }
                             }
-                            if (!find)
-                            {
-                                Console.WriteLine("The rooms is full, refuse the connection.");
+                            if (!find) {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Rooms is full, refuse the connection.");
                                 client.Close();
                             }
-                        }
-                        else
-                        {
+                        } else {
                             //client come with ID and begin with 0, this is a bak connect.
                             //* update in v2
                         }
-                    }
-                    else
-                    {
+                    } else {
                         //else if the client come with 1 before all bytes, search the ID Code in the 1-4 byte position
                         int id = cmd - 128;
-                        if (hosts[id] == null)
-                        {
-                            Console.WriteLine("The room id is wrong or the room is already close, refuse the connection.");
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Judge is Client client, give ROOM {0}", id);
+                        if (hosts[id] == null) {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("The room id <{0}> is wrong or the room is already close, refuse the connection.",id);
                             client.Close();
-                        }
-                        else
-                        {
-                            if (rooms[id] == null)
-                            {
+                        } else {
+                            if (rooms[id] == null) {
                                 //  if get the ID and its Host Room, put into new PipeThread
                                 Thread thread = new Thread(new ParameterizedThreadStart(PipeRoom));
                                 rooms[id] = thread;
                                 thread.Name = (id + 1).ToString();
                                 thread.Start(new Pipe(hosts[id], client));
-                            }
-                            else
-                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine("Room start succefully.");
+                            } else {
                                 //  already one client connect to the host in room[id]
                                 //*update in v2 edition
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Already one client in this room.");
                                 client.Close();
                             }
 
                         }
                     }
-                }
-                else
-                {
+                } else {
                     client.Close();
                 }
                 //  else close the connection
-            }catch(Exception e)
-            {
-                Console.WriteLine(e.ToString());
+            } catch (Exception e) {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(e.ToString());
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("不知道发生了什么，有点凉");
             }
         }
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             Thread timewatcher = new Thread(new ThreadStart(TimeWatcher));
             timewatcher.Start();
             //start time watcher(gc)
-
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             serverSocket.Bind(new IPEndPoint(IPAddress.Any, 1030));  //绑定IP地址：端口
             serverSocket.Listen(10);//设定最多10个排队连接请求 
-            while (running)
-            {
-                try
-                {
-
-                    Console.WriteLine("start listen...");
+            while (running) {
+                try {
                     //start server and accept
                     Socket clientSocket = serverSocket.Accept();
                     //get new client
                     IPEndPoint clientAddr = (IPEndPoint)clientSocket.RemoteEndPoint;
                     string ipaddr = clientAddr.Address.ToString();
                     int port = clientAddr.Port;//get IP and port 
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("new client come with ip: {0} and port: {1}", ipaddr, port);
                     Thread thread = new Thread(new ParameterizedThreadStart(JudgeClientType));
                     thread.Start(clientSocket);
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.Write(e.ToString());
                 }
             }
