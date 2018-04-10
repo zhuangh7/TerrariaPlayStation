@@ -21,10 +21,9 @@ namespace TestProject
                 Console.WriteLine("sent one msg");
             }
         }
-        static void Main(string[] args)
-        {
-            if (args.Length == 1)
-            {
+        public static void PlayTerrariaTogetherTestFunction(string[] args) {
+
+            if (args.Length == 1) {
                 //模拟host
                 Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777));  //绑定IP地址：端口
@@ -37,16 +36,13 @@ namespace TestProject
                 Thread thread = new Thread(new ParameterizedThreadStart(writeRead));
                 thread.Start(client);
 
-                while (true)
-                {
+                while (true) {
                     length = client.Receive(msg);
                     Console.WriteLine("msg receive:");
                     Console.Write(System.Text.Encoding.ASCII.GetString(msg));
                     msg = new byte[1024];
                 }
-            }
-            else
-            {
+            } else {
                 //模拟client
                 Console.WriteLine("try as client");
                 Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -57,8 +53,7 @@ namespace TestProject
                 Thread thread = new Thread(new ParameterizedThreadStart(writeRead));
                 thread.Start(clientSocket);
                 Console.WriteLine("start pipe");
-                while (true)
-                {
+                while (true) {
                     length = clientSocket.Receive(msg);
                     Console.WriteLine("msg receive:");
                     Console.Write(System.Text.Encoding.ASCII.GetString(msg));
@@ -66,6 +61,13 @@ namespace TestProject
                 }
 
             }
+        }
+        public static void ZPMTestFunc(string[] args) {
+                    }
+        static void Main(string[] args)
+        {
+            //PlayTerrariaTogetherTestFunction(args);
+            ZPMTestFunc(args);
         }
     }
 }
