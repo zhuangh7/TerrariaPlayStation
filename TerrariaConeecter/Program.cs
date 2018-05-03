@@ -100,13 +100,14 @@ namespace TerrariaConeecter {
                 if (name < 0) {
                     name = -name;
                 }
-                Clean(name,pipe.client,pipe.host);
+                Clean(name, pipe.client, pipe.host);
             }
         }
 
         public static void JudgeClientType(Object obj) {
             try {
-                Socket client = (Socket)obj;
+                dynamic c = (Client)obj;
+                Socket client = c.socket;
                 byte[] get = new byte[1];
                 int length = client.Receive(get);
                 if (length == 1) {
@@ -126,8 +127,9 @@ namespace TerrariaConeecter {
                                     //and put the client into rooms
                                     times[i] = new TimeSpan(DateTime.Now.Ticks);
                                     Console.ForegroundColor = ConsoleColor.Green;
+                                    c.print(0);
                                     Console.WriteLine("Judge is Host client, give ROOM {0}", i);
-                                    Console.WriteLine("Set timetag: {0} to socket Room {1}", times[i].ToString(),1);
+                                    Console.WriteLine("Set timetag: {0} to socket Room {1}", times[i].ToString(), 1);
                                     hosts[i] = client;
                                     find = true;
                                     break;
@@ -149,9 +151,11 @@ namespace TerrariaConeecter {
                         Console.WriteLine("Judge is Client client, give ROOM {0}", id);
                         if (hosts[id] == null) {
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("The room id <{0}> is wrong or the room is already close, refuse the connection.",id);
+                            c.print(-1);
+                            Console.WriteLine("The room id <{0}> is wrong or the room is already close, refuse the connection.", id);
                             client.Close();
                         } else {
+                            c.print(1);
                             if (rooms[id] == null) {
                                 //  if get the ID and its Host Room, put into new PipeThread
                                 Thread thread = new Thread(new ParameterizedThreadStart(PipeRoom));
@@ -181,7 +185,16 @@ namespace TerrariaConeecter {
                 Console.WriteLine("不知道发生了什么，有点凉");
             }
         }
+        public static ZProgramMoniter.Moniter fun = (args) => {
+            if ((int)args.Arguments[0] != -1) {
+                return true;
+            } else {
+                return false;
+            }
+        };
         static void Main(string[] args) {
+            ZProgramMoniter.ZPM.RegisterMoniter("user_create", fun);
+
             Thread timewatcher = new Thread(new ThreadStart(TimeWatcher));
             timewatcher.Start();
             //start time watcher(gc)
@@ -191,15 +204,18 @@ namespace TerrariaConeecter {
             while (running) {
                 try {
                     //start server and accept
+                    Console.WriteLine("start listen in 1030");
                     Socket clientSocket = serverSocket.Accept();
                     //get new client
                     IPEndPoint clientAddr = (IPEndPoint)clientSocket.RemoteEndPoint;
                     string ipaddr = clientAddr.Address.ToString();
                     int port = clientAddr.Port;//get IP and port 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("new client come with ip: {0} and port: {1}", ipaddr, port);
+                    dynamic c = new Client();
+                    c.IP = ipaddr;
+                    c.PORT = port;
+                    c.socket = clientSocket;
                     Thread thread = new Thread(new ParameterizedThreadStart(JudgeClientType));
-                    thread.Start(clientSocket);
+                    thread.Start(c);
                 } catch (Exception e) {
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.Write(e.ToString());
@@ -208,6 +224,7 @@ namespace TerrariaConeecter {
             serverSocket.Close();
             Console.WriteLine("press any key to exit");
             Console.Read();
+
         }
     }
 }

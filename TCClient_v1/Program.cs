@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace TCClient_v1 {
     class Program {
-        public static int PORT = 9527;//change to 7777 while pro
+        public static int PORT = 7777;//change to 7777 while pro
+        public static string SERVER_IP = "123.206.208.46";//123.206.208.46
         public static bool running = true;
 
         public static void pipe(Object obj) {
@@ -48,7 +49,7 @@ namespace TCClient_v1 {
 
                         //connect to server
                         Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        clientSocket.Connect(new IPEndPoint(IPAddress.Parse("123.206.208.46"), 1030));
+                        clientSocket.Connect(new IPEndPoint(IPAddress.Parse(SERVER_IP), 1030));
                         Console.WriteLine("Connect server successfully.");
 
                         byte[] msg = new byte[1];
@@ -87,7 +88,7 @@ namespace TCClient_v1 {
 
                     Console.WriteLine("Start to connect server...");
                     Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    clientSocket.Connect(new IPEndPoint(IPAddress.Parse("123.206.208.46"), 1030));
+                    clientSocket.Connect(new IPEndPoint(IPAddress.Parse(SERVER_IP), 1030));
 
                     Console.WriteLine("Connect server successfully.");
                     byte[] msg = new byte[1];
@@ -133,6 +134,8 @@ namespace TCClient_v1 {
                     running = false;
                 }
             }
+            Console.WriteLine("press any key to exit");
+            Console.Read();
         }
     }
 }
