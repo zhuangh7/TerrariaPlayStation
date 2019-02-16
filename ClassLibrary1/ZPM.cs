@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using KingAOP.Aspects;
 using RabbitMQ.Client;
 
@@ -21,7 +22,27 @@ namespace ZProgramMoniter {
                 return null;
             }
         }
-        public static void sendMessageToNormal(object fun) {
+        public static  void SendNormalLog(string data) {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("ZPM LOG SENT");
+            try {
+                Thread t1 = new Thread(new ParameterizedThreadStart(ZPM.sendMessageToNormal));
+                t1.Start(data);
+            } catch (Exception e) {
+                Console.WriteLine(e);
+            }
+        }
+        public static  void SendWarnningLog(string data) {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("ZPM WARNNING SENT");
+            try {
+                Thread t1 = new Thread(new ParameterizedThreadStart(ZPM.sendMessageToWarnning));
+                t1.Start(data);
+            } catch (Exception e) {
+                Console.WriteLine(e);
+            }
+        }
+        public static void sendMessageToNormal(object data) {
             var factory = new ConnectionFactory() { HostName = "www.zhuangh7.cn", UserName = "test", Password = "test" };
             using (var connection = factory.CreateConnection()) {
                 using (var channel = connection.CreateModel()) {
@@ -31,7 +52,7 @@ namespace ZProgramMoniter {
                                          autoDelete: false,
                                          arguments: null);
 
-                    string message = $"{{\"type\":\"ZPM\",\"call_function\":\"{fun}\"}}";
+                    string message = $"{{\"type\":\"ZPM\",\"data\":{{{data}}}}}";
                     var body = Encoding.UTF8.GetBytes(message);
 
                     channel.BasicPublish(exchange: "",
@@ -42,7 +63,7 @@ namespace ZProgramMoniter {
                 }
             }
         }
-        public static void sendMessageToWarnning(object fun) {
+        public static void sendMessageToWarnning(object data) {
             var factory = new ConnectionFactory() { HostName = "www.zhuangh7.cn", UserName = "test", Password = "test" };
             using (var connection = factory.CreateConnection()) {
                 using (var channel = connection.CreateModel()) {
@@ -52,7 +73,7 @@ namespace ZProgramMoniter {
                                          autoDelete: false,
                                          arguments: null);
 
-                    string message = $"{{\"type\":\"ZPM_W\",\"call_function\":\"{fun}\"}}";
+                    string message = $"{{\"type\":\"ZPM_W\",\"data\":{{{data}}}}}";
                     var body = Encoding.UTF8.GetBytes(message);
 
                     channel.BasicPublish(exchange: "",

@@ -9,10 +9,14 @@ namespace ZProgramMoniter {
             this.name = fun;
         }
         public override void OnEntry(MethodExecutionArgs args) {
-            SendNormalLog(this.FunctionName);
-            Moniter moniter = ZProgramMoniter.ZPM.getMoniter(name);
-            if (!moniter(args)) {
-                SendWarnningLog(this.FunctionName);
+            try {
+                ZPM.SendNormalLog($"\"function_name\":\"{this.FunctionName}\",\"client_ip\":\"{args.Arguments[1]}\",\"client_port\":\"{args.Arguments[2]}\"");
+                Moniter moniter = ZProgramMoniter.ZPM.getMoniter(name);
+                if (!moniter(args)) {
+                    ZPM.SendWarnningLog($"\"function_name\":\"{this.FunctionName}\",\"client_ip\":\"{args.Arguments[1]}\",\"client_port\":\"{args.Arguments[2]}\"");
+                }
+            } catch (Exception e) {
+                Console.WriteLine("error happened");
             }
         }
 
@@ -22,25 +26,6 @@ namespace ZProgramMoniter {
         public override void OnExit(MethodExecutionArgs args) {
         }
 
-        private void SendNormalLog(string fun) {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("ZPM LOG SENT");
-            try {
-                Thread t1 = new Thread(new ParameterizedThreadStart(ZPM.sendMessageToNormal));
-                t1.Start(fun);
-            } catch (Exception e) {
-                Console.WriteLine(e);
-            }
-        }
-        private void SendWarnningLog(string fun) {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("ZPM WARNNING SENT");
-            try {
-                Thread t1 = new Thread(new ParameterizedThreadStart(ZPM.sendMessageToWarnning));
-                t1.Start(fun);
-            } catch (Exception e) {
-                Console.WriteLine(e);
-            }
-        }
+
     }
 }

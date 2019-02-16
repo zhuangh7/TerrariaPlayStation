@@ -159,8 +159,11 @@ namespace KingAOP.Core.Methods
             {
                 var method = Expression.Block(
                     Expression.Call(Expression.Constant(aspect), typeof(OnMethodBoundaryAspect).GetMethod(methodName), ArgsExpression),
-                    Expression.Assign(RetMethodValue,
-                    Expression.Call(ArgsExpression, typeof(MethodExecutionArgs).GetProperty("ReturnValue").GetGetMethod())));
+                        Expression.Assign(RetMethodValue,
+                            Expression.Call(ArgsExpression, typeof(MethodExecutionArgs).GetProperty("ReturnValue").GetGetMethod()
+                            )
+                        )
+                    );
 
                 return _isByRefArgs ? method.UpdateRefParamsByArguments(_args, ArgsExpression) : method;
             }
