@@ -1,0 +1,9 @@
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\bin\Debug\netstandard2.0\ZProgramMoniter.deps.json
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\bin\Debug\netstandard2.0\ZProgramMoniter.dll
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\bin\Debug\netstandard2.0\ZProgramMoniter.pdb
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\obj\Debug\netstandard2.0\ZProgramMoniter.csprojResolveAssemblyReference.cache
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\obj\Debug\netstandard2.0\ZProgramMoniter.csproj.CoreCompileInputs.cache
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\obj\Debug\netstandard2.0\ZProgramMoniter.AssemblyInfoInputs.cache
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\obj\Debug\netstandard2.0\ZProgramMoniter.AssemblyInfo.cs
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\obj\Debug\netstandard2.0\ZProgramMoniter.dll
+G:\Users\Zhuangh7\source\repos\TerrariaConeecter\ClassLibrary1\obj\Debug\netstandard2.0\ZProgramMoniter.pdb
